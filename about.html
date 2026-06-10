@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How RecoverFlow works — the math & the benchmarks</title>
+<meta name="description" content="How RecoverFlow estimates the revenue your SaaS loses to failed payments: the formula, the published benchmarks behind each default, what the model does and doesn't capture, and why it runs entirely in your browser.">
+<link rel="canonical" href="https://dukotah.github.io/recoverflow/about.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="RecoverFlow">
+<meta property="og:title" content="How RecoverFlow works — the math & the benchmarks">
+<meta property="og:description" content="The formula, the published benchmarks behind each default, and the limits of the model. Runs entirely in your browser — nothing you enter is uploaded.">
+<meta property="og:url" content="https://dukotah.github.io/recoverflow/about.html">
+<meta property="og:image" content="https://dukotah.github.io/recoverflow/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#faf8f4">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"TechArticle","headline":"How RecoverFlow works — the math & the benchmarks","description":"How RecoverFlow estimates the recurring revenue a SaaS loses to failed payments and involuntary churn: the formula, the benchmarks behind each default, the model's limits, and the client-side privacy guarantee.","author":{"@type":"Organization","name":"Copper Bay Labs","url":"https://copperbaytech.com"},"publisher":{"@type":"Organization","name":"Copper Bay Labs","url":"https://copperbaytech.com"},"mainEntityOfPage":"https://dukotah.github.io/recoverflow/about.html"}
+</script>
+<link rel="stylesheet" href="styles.css?v=1">
+<style>
+  .doc .lede{font-size:clamp(17px,2.3vw,20px);color:var(--muted)}
+  .doc h2{scroll-margin-top:80px}
+  .doc h3{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:19px;margin:22px 0 6px;letter-spacing:-.01em}
+  .toc{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 6px;padding:0;list-style:none}
+  .toc a{display:inline-block;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:14px;font-weight:600;color:var(--muted)}
+  .toc a:hover{border-color:var(--bay);color:var(--ink);text-decoration:none}
+  .tbl-wrap{overflow-x:auto;margin:18px 0;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+  table.bench{width:100%;border-collapse:collapse;background:var(--surface);font-size:15px;min-width:520px}
+  table.bench th,table.bench td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line-2);vertical-align:top}
+  table.bench thead th{font-family:"Hanken Grotesk",sans-serif;font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted-2);background:var(--paper)}
+  table.bench tbody tr:last-child td{border-bottom:none}
+  table.bench code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;background:var(--line-2);padding:2px 6px;border-radius:5px;color:#2c2f36;white-space:nowrap}
+  .formula{background:#fbf6f2;border:1px solid #e6d2c2;border-radius:12px;padding:16px 20px;margin:18px 0;font-family:var(--mono);font-size:14px;color:#3a2a20;line-height:1.8;overflow-x:auto}
+  .formula .tok{color:var(--copper-deep);font-weight:700}
+  .callout.warn-callout{background:var(--fail-bg);border-left-color:var(--fail);color:#5e2019}
+  .steps{margin:18px 0;padding-left:0;list-style:none;counter-reset:step}
+  .steps>li{position:relative;padding:4px 0 16px 46px;counter-increment:step}
+  .steps>li::before{content:counter(step);position:absolute;left:0;top:2px;width:30px;height:30px;border-radius:50%;background:var(--copper);color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;font-family:"Fraunces",serif}
+  .steps>li strong{display:block;margin-bottom:2px}
+  .doc code.inline{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em;background:var(--line-2);padding:2px 6px;border-radius:5px}
+  .roadmap-note{background:var(--copper-tint);border-radius:12px;padding:16px 20px;margin:22px 0;border:1px solid #efd9c6}
+  .roadmap-note strong{color:var(--copper-deep)}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<header class="masthead" role="banner">
+  <div class="wrap hdr-bar">
+    <a class="brand" href="./" aria-label="RecoverFlow — go to homepage">
+      <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="28" fill="#bf6b3c"/>
+        <circle cx="32" cy="32" r="21" fill="#14181f"/>
+        <path d="M44 28 A14 14 0 1 0 46 38" fill="none" stroke="#faf8f4" stroke-width="4.5" stroke-linecap="round"/>
+        <path d="M44 21 L45 30 L36 27 Z" fill="#faf8f4"/>
+        <path d="M32 23 V41 M27.5 27 C27.5 24.5 30 24 32 24 C34.5 24 36 25.5 36 27.2 C36 31 28 31 28 35 C28 37 29.8 39 32 39 C34.5 39 36.5 38 36.5 36" fill="none" stroke="#bf6b3c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="wordmark">RecoverFlow</span>
+    </a>
+    <nav class="nav" aria-label="Primary navigation">
+      <a href="about.html" aria-current="page">How it works</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<article class="doc">
+  <div class="wrap narrow">
+    <p class="eyebrow" style="text-align:left">Methodology &amp; benchmarks</p>
+    <h1>How RecoverFlow works</h1>
+    <p class="lede">RecoverFlow turns four numbers about your subscription business into a clear estimate of the recurring revenue you lose to failed payments — and how much a real dunning flow would win back. This page shows the exact formula, the published benchmarks behind every default, what the model deliberately leaves out, and why nothing you type ever leaves your browser.</p>
+
+    <ul class="toc" aria-label="On this page">
+      <li><a href="#privacy">Privacy guarantee</a></li>
+      <li><a href="#formula">The formula</a></li>
+      <li><a href="#benchmarks">The benchmarks</a></li>
+      <li><a href="#interpret">Reading the result</a></li>
+      <li><a href="#limits">What it doesn't model</a></li>
+      <li><a href="#lift">Lifting recovery</a></li>
+      <li><a href="#roadmap">Roadmap</a></li>
+    </ul>
+
+    <h2 id="privacy">Nothing you enter leaves your browser</h2>
+    <p>RecoverFlow has <strong>no backend.</strong> When you type your MRR, subscriber count, or recovery rates, every number stays on your machine. The whole calculation runs in JavaScript, locally, in the tab you're looking at.</p>
+    <ul>
+      <li><strong>No network requests with your data.</strong> Your figures are never uploaded, POSTed, or beaconed anywhere — ours or anyone else's.</li>
+      <li><strong>No logging or storage.</strong> Nothing is written to a database, log, local storage, or analytics. Reload the tab and it's gone.</li>
+      <li><strong>It works offline.</strong> Load the page once, disconnect, and the calculator still runs — the simplest proof there's nothing to upload to.</li>
+    </ul>
+    <div class="callout">
+      <strong>Verify it yourself.</strong> Open your browser's developer tools, switch to the Network tab, and change any input. You won't see a request carrying your numbers — because there isn't one. The only network activity is loading the page, its stylesheet, the script, and the web fonts.
+    </div>
+
+    <h2 id="formula">The formula</h2>
+    <p>The model is intentionally simple and transparent — a steady-state snapshot of one month, then multiplied out to a year. Everything starts from your monthly recurring revenue (MRR). If you enter subscribers and ARPU instead, MRR is just <code class="inline">subscribers × ARPU</code>.</p>
+    <div class="formula">
+<span class="tok">at risk</span>   = MRR × failure_rate × at_risk_share<br>
+<span class="tok">recovered</span> = at_risk × current_recovery_rate<br>
+<span class="tok">lost</span>      = at_risk − recovered          ← the leak<br>
+<span class="tok">won back</span>  = at_risk × target_rate − recovered<br>
+<span class="tok">annual</span>    = monthly × 12
+    </div>
+    <p><strong>Revenue at risk</strong> is the slice of your MRR exposed to involuntary churn each month — the charges that fail. Your <strong>current recovery rate</strong> splits that into what you keep and what you lose; the loss is the leak the headline reports. Lifting to your <strong>target recovery rate</strong> recovers more of the same at-risk revenue, and the difference is the win-back. The "at-risk share" lets you treat only a fraction of failures as genuinely lost (leave it at 100% to count every failure).</p>
+
+    <h2 id="benchmarks">The benchmarks behind the defaults</h2>
+    <p>Each default reflects widely cited subscription-payments research. They're sensible starting points, not laws — replace any of them with your own data the moment you have it.</p>
+    <div class="tbl-wrap">
+      <table class="bench">
+        <thead>
+          <tr><th scope="col">Input</th><th scope="col">Default</th><th scope="col">Why</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Monthly failure rate</td><td><code>9%</code></td><td>Studies of subscription billing consistently land near ~9% of recurring charges failing in a given month — mostly expired cards, insufficient funds, and issuer fraud blocks.</td></tr>
+          <tr><td>Involuntary share of churn</td><td><code>20–40%</code></td><td>A large slice of total churn is involuntary (payment-driven), not customers choosing to leave. RecoverFlow treats failed charges directly, so the at-risk-share field defaults to 100% of failures; this benchmark is why recovering them matters so much.</td></tr>
+          <tr><td>Current recovery rate</td><td><code>~38%</code></td><td>Stripe's built-in Smart Retries recover roughly 38% of failed charges on their own — the right default if retries are all you rely on.</td></tr>
+          <tr><td>Target recovery rate</td><td><code>60–80%</code></td><td>A dedicated dunning flow — smart retry timing plus card-update emails, SMS, and in-app prompts — typically recovers 60–80% of failed charges.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fine" style="color:var(--muted-2)">Figures are industry benchmarks and vary by business, price point, geography, and card mix. Treat them as representative ranges, and override them with your own numbers for an accurate estimate.</p>
+
+    <h2 id="interpret">Reading the result</h2>
+    <p>The big number is the recurring revenue you're losing <em>per year</em> at your current recovery rate — the charges that fail and never get recovered. The teal band below it is the additional revenue a dunning flow would win back by lifting you to your target rate. The breakdown bars show the same money split five ways: at risk, recovered today, lost today, won back, and still lost even after dunning.</p>
+    <p>The <strong>shareable line</strong> packs the headline into one sentence you can drop into a Slack message, a board update, or a note to your co-founder: <em>"RecoverFlow estimates we're losing about $X/yr to failed payments…"</em></p>
+
+    <h2 id="limits">What the model doesn't capture</h2>
+    <div class="callout warn-callout">
+      <strong>Important:</strong> RecoverFlow is a planning estimate, <strong>not an audited forecast or financial advice.</strong> It's a credible order-of-magnitude, not a guaranteed figure.
+    </div>
+    <p>To stay simple and honest, the model leaves several things out — and they mostly make the <em>real</em> loss larger, not smaller:</p>
+    <ul>
+      <li><strong>Lifetime value compounding.</strong> A recovered customer keeps paying for months. The model counts only the immediate month's charge × 12, so it understates the value of saving a long-tenure subscriber.</li>
+      <li><strong>Seasonality and growth.</strong> It assumes a steady-state month. Real MRR, failure rates, and card-expiry clusters move over the year.</li>
+      <li><strong>Your exact card mix.</strong> Recovery rates depend on geography, network, and how aggressively you retry. Use your own current rate for a tighter number.</li>
+      <li><strong>Fees and refunds.</strong> Figures are gross recurring revenue, not net of processing fees or later refunds.</li>
+    </ul>
+
+    <h2 id="lift">What actually lifts recovery from 38% to 70%</h2>
+    <p>Built-in retries only retry the card on a fixed schedule. A dedicated dunning flow adds the parts that recover customers retries miss:</p>
+    <ol class="steps">
+      <li><strong>Smart retry timing.</strong> Retry when funds are likely — after payday, or when a topped-up balance is probable — instead of on a blind fixed cadence.</li>
+      <li><strong>Card-update prompts.</strong> Email and SMS that ask the customer to update an expired or declined card, with a one-click hosted update page.</li>
+      <li><strong>In-app nudges.</strong> Banners and prompts for active users who'd happily fix billing if they knew it had failed.</li>
+      <li><strong>Graceful escalation.</strong> A sequence that escalates over days before access is cut, so you don't lose a willing customer to a single silent decline.</li>
+    </ol>
+    <p>Each channel recovers customers the others miss — which is how purpose-built tools reach the 60–80% range. That paid recovery engine is what Copper Bay Labs is building next. <a href="https://copperbaytech.com" target="_blank" rel="noopener noreferrer">Get on the list &rarr;</a></p>
+
+    <h2 id="roadmap">On the roadmap</h2>
+    <div class="roadmap-note">
+      <p style="margin:0"><strong>The RecoverFlow recovery engine.</strong> This free calculator shows the size of the leak. The paid product plugs it: connect Stripe, and RecoverFlow runs the smart-retry schedule and the email / SMS / in-app dunning sequence automatically — turning the win-back number above into recovered revenue. Stay tuned.</p>
+    </div>
+
+    <p style="margin-top:30px"><a class="btn primary" href="./">Calculate your number</a></p>
+  </div>
+</article>
+</main>
+
+<footer class="footer" role="contentinfo">
+  <div class="wrap foot">
+    <div>
+      <a class="brand small" href="./" aria-label="RecoverFlow — homepage">
+        <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="32" r="28" fill="#bf6b3c"/>
+          <circle cx="32" cy="32" r="21" fill="#1d222b"/>
+          <path d="M44 28 A14 14 0 1 0 46 38" fill="none" stroke="#cbd2da" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M44 21 L45 30 L36 27 Z" fill="#cbd2da"/>
+          <path d="M32 23 V41 M27.5 27 C27.5 24.5 30 24 32 24 C34.5 24 36 25.5 36 27.2 C36 31 28 31 28 35 C28 37 29.8 39 32 39 C34.5 39 36.5 38 36.5 36" fill="none" stroke="#bf6b3c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="wordmark">RecoverFlow</span>
+      </a>
+      <p class="fine">An estimate from editable benchmarks — a planning tool, not financial advice.</p>
+    </div>
+    <nav class="foot-nav" aria-label="Footer navigation">
+      <a href="about.html">How it works</a>
+      <a href="https://dukotah.github.io/shipsafe/" target="_blank" rel="noopener noreferrer">ShipSafe</a>
+      <a href="https://dukotah.github.io/leakcheck/" target="_blank" rel="noopener noreferrer">LeakCheck</a>
+      <a href="https://dukotah.github.io/exposurecheck/" target="_blank" rel="noopener noreferrer">ExposureCheck</a>
+      <a href="https://dukotah.github.io/depcheck/" target="_blank" rel="noopener noreferrer">DepCheck</a>
+      <a href="https://copperbaytech.com" target="_blank" rel="noopener noreferrer">Recover my revenue &rarr;</a>
+    </nav>
+  </div>
+  <div class="wrap">
+    <p class="madeby">A <a href="https://copperbaytech.com" target="_blank" rel="noopener noreferrer">Copper Bay Labs</a> product. Estimates are for planning only and are not financial advice.</p>
+  </div>
+</footer>
+</body>
+</html>

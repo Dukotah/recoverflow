@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RecoverFlow — social card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{margin:0}
+  .card{
+    width:1200px;height:630px;position:relative;overflow:hidden;
+    background:#faf8f4;color:#14181f;
+    font-family:"Hanken Grotesk",ui-sans-serif,system-ui,sans-serif;
+    padding:74px 86px;display:flex;flex-direction:column;justify-content:space-between;
+  }
+  /* copper ring motif, echoing the hero */
+  .ring{position:absolute;width:560px;height:560px;border:70px solid #f6ebe2;border-radius:50%;right:-200px;top:-170px;opacity:.85}
+  .ring-2{position:absolute;width:300px;height:300px;border:42px solid #e3eeef;border-radius:50%;right:120px;bottom:-150px;opacity:.7}
+  .top,.tagline,.foot{position:relative;z-index:1}
+
+  .brand{display:flex;align-items:center;gap:18px}
+  .mark{width:64px;height:64px;flex:0 0 auto}
+  .wordmark{font-family:"Fraunces",Georgia,serif;font-weight:700;font-size:46px;letter-spacing:-.02em}
+
+  .eyebrow{margin-top:50px;color:#8f4a22;font-weight:700;font-size:21px;letter-spacing:.12em;text-transform:uppercase}
+  .tagline{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:66px;line-height:1.06;letter-spacing:-.015em;max-width:20ch;margin-top:18px}
+  .tagline .hl{color:#bf6b3c}
+  .browser{display:inline-flex;align-items:center;gap:14px;margin-top:28px;background:#e3eeef;color:#13525a;font-weight:700;font-size:23px;padding:12px 22px;border-radius:999px}
+  .dot{width:13px;height:13px;border-radius:50%;background:#2f7d52;box-shadow:0 0 0 5px rgba(47,125,82,.18)}
+
+  .foot{display:flex;align-items:center;justify-content:space-between}
+  .foot .made{color:#665f54;font-size:24px;font-weight:600}
+  .foot .made b{color:#14181f;font-weight:700}
+  .chips{display:flex;gap:12px}
+  .chip{font-size:19px;font-weight:700;padding:8px 16px;border-radius:8px}
+  .chip.lost{background:#f9e7e4;color:#bb392b}
+  .chip.win{background:#e3eeef;color:#13525a}
+  .chip.now{background:#f6ebe2;color:#8f4a22}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="ring"></div>
+    <div class="ring-2"></div>
+
+    <div class="top">
+      <div class="brand">
+        <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="32" r="28" fill="#bf6b3c"/>
+          <circle cx="32" cy="32" r="21" fill="#14181f"/>
+          <path d="M44 28 A14 14 0 1 0 46 38" fill="none" stroke="#faf8f4" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M44 21 L45 30 L36 27 Z" fill="#faf8f4"/>
+          <path d="M32 23 V41 M27.5 27 C27.5 24.5 30 24 32 24 C34.5 24 36 25.5 36 27.2 C36 31 28 31 28 35 C28 37 29.8 39 32 39 C34.5 39 36.5 38 36.5 36" fill="none" stroke="#bf6b3c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="wordmark">RecoverFlow</span>
+      </div>
+      <p class="eyebrow">Failed-payment revenue calculator</p>
+      <h1 class="tagline">See what failed payments are <span class="hl">silently costing</span> your SaaS</h1>
+      <span class="browser"><span class="dot"></span>100% in your browser — nothing is uploaded</span>
+    </div>
+
+    <div class="foot">
+      <p class="made">A <b>Copper Bay Labs</b> product</p>
+      <div class="chips">
+        <span class="chip lost">LOST</span>
+        <span class="chip now">RECOVERED</span>
+        <span class="chip win">WON BACK</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

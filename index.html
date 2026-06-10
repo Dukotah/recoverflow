@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RecoverFlow — how much revenue is failed payments costing your SaaS?</title>
+<meta name="description" content="See how much recurring revenue your SaaS is silently losing to failed payments and involuntary churn — and how much a dedicated dunning flow would win back. Free calculator, runs entirely in your browser.">
+<link rel="canonical" href="https://dukotah.github.io/recoverflow/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="RecoverFlow">
+<meta property="og:title" content="RecoverFlow — recover the revenue failed payments are costing you">
+<meta property="og:description" content="Estimate the recurring revenue lost to failed payments and involuntary churn, and how much a dunning flow recovers. Free, runs entirely in your browser.">
+<meta property="og:url" content="https://dukotah.github.io/recoverflow/">
+<meta property="og:image" content="https://dukotah.github.io/recoverflow/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#faf8f4">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"RecoverFlow","applicationCategory":"BusinessApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free client-side calculator that estimates the recurring revenue a SaaS loses to failed payments and involuntary churn, and how much a dedicated dunning flow would recover.","publisher":{"@type":"Organization","name":"Copper Bay Labs","url":"https://copperbaytech.com"}}
+</script>
+<link rel="stylesheet" href="styles.css?v=1">
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<header class="masthead" role="banner">
+  <div class="wrap hdr-bar">
+    <a class="brand" href="./" aria-label="RecoverFlow — go to homepage">
+      <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="28" fill="#bf6b3c"/>
+        <circle cx="32" cy="32" r="21" fill="#14181f"/>
+        <path d="M44 28 A14 14 0 1 0 46 38" fill="none" stroke="#faf8f4" stroke-width="4.5" stroke-linecap="round"/>
+        <path d="M44 21 L45 30 L36 27 Z" fill="#faf8f4"/>
+        <path d="M32 23 V41 M27.5 27 C27.5 24.5 30 24 32 24 C34.5 24 36 25.5 36 27.2 C36 31 28 31 28 35 C28 37 29.8 39 32 39 C34.5 39 36.5 38 36.5 36" fill="none" stroke="#bf6b3c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="wordmark">RecoverFlow</span>
+    </a>
+    <nav class="nav" aria-label="Primary navigation">
+      <a href="about.html">How it works</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Failed-payment revenue calculator</p>
+      <h1>How much is failed payments costing your SaaS?</h1>
+      <p class="lede">Roughly <strong>1 in 11 subscription charges fail every month</strong> — expired cards, insufficient funds, fraud blocks. Most of those customers wanted to pay. Without a real dunning flow, that revenue just <strong>silently churns</strong>. See your number below.</p>
+
+      <form id="calc-form" class="calc" novalidate>
+
+        <fieldset class="field-group">
+          <legend>Your recurring revenue</legend>
+
+          <div class="mode-toggle" role="radiogroup" aria-label="How do you want to enter revenue?">
+            <button type="button" class="mode-btn is-active" id="mode-mrr" role="radio" aria-checked="true" tabindex="0">Enter MRR</button>
+            <button type="button" class="mode-btn" id="mode-subs" role="radio" aria-checked="false" tabindex="-1">Subscribers &times; ARPU</button>
+          </div>
+
+          <div class="input-grid" id="panel-mrr">
+            <div class="input-row">
+              <label for="mrr">Monthly recurring revenue (MRR)</label>
+              <div class="input-affix">
+                <span class="affix" aria-hidden="true">$</span>
+                <input type="text" inputmode="decimal" id="mrr" name="mrr" value="50,000" autocomplete="off" aria-describedby="mrr-help">
+              </div>
+              <p class="input-help" id="mrr-help">Total recurring revenue you bill in a typical month.</p>
+            </div>
+          </div>
+
+          <div class="input-grid" id="panel-subs" hidden>
+            <div class="input-row">
+              <label for="subs">Active paying subscribers</label>
+              <div class="input-affix">
+                <input type="text" inputmode="numeric" id="subs" name="subs" value="1,000" autocomplete="off">
+              </div>
+              <p class="input-help">How many customers you charge on a recurring basis.</p>
+            </div>
+            <div class="input-row">
+              <label for="arpu">Average revenue per user / month (ARPU)</label>
+              <div class="input-affix">
+                <span class="affix" aria-hidden="true">$</span>
+                <input type="text" inputmode="decimal" id="arpu" name="arpu" value="50" autocomplete="off">
+              </div>
+              <p class="input-help">Average monthly amount you bill each subscriber.</p>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="field-group">
+          <legend>Your assumptions <span class="legend-note">— every default is editable, with a source</span></legend>
+
+          <div class="input-grid">
+            <div class="input-row">
+              <label for="fail-rate">Monthly payment-failure rate</label>
+              <div class="input-affix">
+                <input type="text" inputmode="decimal" id="fail-rate" name="fail-rate" value="9" autocomplete="off">
+                <span class="affix affix-end" aria-hidden="true">%</span>
+              </div>
+              <p class="input-help">Share of recurring charges that fail in a month. Industry studies put this near <strong>9%</strong>.</p>
+            </div>
+
+            <div class="input-row">
+              <label for="involuntary-share">Share of failures that would otherwise churn</label>
+              <div class="input-affix">
+                <input type="text" inputmode="decimal" id="involuntary-share" name="involuntary-share" value="100" autocomplete="off">
+                <span class="affix affix-end" aria-hidden="true">%</span>
+              </div>
+              <p class="input-help">Failed charges become lost revenue unless recovered. Leave at 100% to count every failure as at-risk.</p>
+            </div>
+          </div>
+
+          <div class="slider-row">
+            <div class="slider-head">
+              <label for="current-rate">Current recovery rate</label>
+              <output class="slider-value" id="current-rate-out" for="current-rate">38%</output>
+            </div>
+            <input type="range" id="current-rate" name="current-rate" min="0" max="80" step="1" value="38" aria-describedby="current-rate-help">
+            <p class="input-help" id="current-rate-help">What you recover today. <strong>Stripe Smart Retries recover ~38%</strong> on their own — a good default if you only rely on built-in retries.</p>
+          </div>
+
+          <div class="slider-row">
+            <div class="slider-head">
+              <label for="target-rate">Target recovery rate <span class="target-tag">with dunning</span></label>
+              <output class="slider-value target" id="target-rate-out" for="target-rate">65%</output>
+            </div>
+            <input type="range" id="target-rate" name="target-rate" min="38" max="80" step="1" value="65" aria-describedby="target-rate-help">
+            <p class="input-help" id="target-rate-help">Where a dedicated dunning flow gets you. <strong>Purpose-built dunning recovers 60–80%</strong> via smart retry timing plus card-update emails, SMS, and in-app prompts.</p>
+          </div>
+        </fieldset>
+
+        <div class="calc-actions">
+          <button type="button" id="example-btn" class="btn">Load an example</button>
+          <button type="button" id="reset-btn" class="btn ghost">Reset to defaults</button>
+        </div>
+
+        <p class="trust-badge" id="trust-line">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          <span><strong>100% in your browser.</strong> Your numbers never leave this tab. No upload, no signup, no tracking of what you enter.</span>
+        </p>
+      </form>
+    </div>
+  </section>
+
+  <div id="calc-status" class="sr-only" role="status" aria-live="polite"></div>
+
+  <section id="results" class="results" tabindex="-1" aria-label="Revenue-recovery estimate">
+    <!-- app.js fills this live as inputs change, and injects the Copy/Share buttons -->
+  </section>
+
+  <section class="detect">
+    <div class="wrap">
+      <p class="eyebrow">Why this happens</p>
+      <h2 class="detect-title">Failed payments are a leak, not an event</h2>
+      <p class="detect-sub">Involuntary churn is the revenue you lose without a customer ever deciding to leave. It hides inside your numbers because each failure is small — but they compound every single month.</p>
+      <ul class="detect-grid">
+        <li class="feature"><span class="feat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span><div><h3>~9% of charges fail monthly</h3><p>Across subscription businesses, roughly 9% of recurring payments fail in a given month.</p></div></li>
+        <li class="feature"><span class="feat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span><div><h3>Mostly expired &amp; declined cards</h3><p>Expirations, insufficient funds, and issuer fraud blocks — not customers choosing to cancel.</p></div></li>
+        <li class="feature"><span class="feat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span><div><h3>20–40% of churn is involuntary</h3><p>A large slice of total churn comes from payments failing, not from dissatisfaction.</p></div></li>
+        <li class="feature"><span class="feat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg></span><div><h3>Smart Retries recover ~38%</h3><p>Stripe's built-in Smart Retries claw back about 38% of failed charges on their own.</p></div></li>
+        <li class="feature"><span class="feat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 9 11l4 4 8-8"/><path d="M16 4h5v5"/></svg></span><div><h3>Dunning recovers 60–80%</h3><p>A dedicated flow — retry timing plus card-update emails, SMS, and in-app nudges — recovers far more.</p></div></li>
+        <li class="feature"><span class="feat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span><div><h3>It compounds yearly</h3><p>Recovered subscribers keep paying. The gap between 38% and 70% is real revenue, every month, all year.</p></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="steps">
+    <div class="wrap">
+      <p class="eyebrow">How the math works</p>
+      <h2 class="steps-title">Three numbers, one clear answer</h2>
+      <ol class="step-grid">
+        <li class="step">
+          <span class="step-num" aria-hidden="true">1</span>
+          <h3>Revenue at risk</h3>
+          <p>Your MRR &times; the failure rate = the recurring revenue exposed to involuntary churn each month.</p>
+        </li>
+        <li class="step">
+          <span class="step-num" aria-hidden="true">2</span>
+          <h3>What you keep vs. lose</h3>
+          <p>Your current recovery rate splits the at-risk revenue into recovered and lost — that loss is the leak.</p>
+        </li>
+        <li class="step">
+          <span class="step-num" aria-hidden="true">3</span>
+          <h3>What dunning wins back</h3>
+          <p>Lifting to your target rate recovers more of the same revenue. The difference is the prize, monthly and annual.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="suite">
+    <div class="wrap">
+      <p class="eyebrow">The Copper Bay Labs suite</p>
+      <h2 class="suite-title">RecoverFlow is one of five free checks for indie SaaS</h2>
+      <p class="suite-sub">Free, browser-based tools for vibe-coded and indie products, from <a href="https://copperbaytech.com" target="_blank" rel="noopener noreferrer">Copper Bay Labs</a>.</p>
+      <ul class="detect-grid">
+        <li class="feature">
+          <span class="feat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+          <div>
+            <h3><a href="https://dukotah.github.io/shipsafe/" target="_blank" rel="noopener noreferrer">ShipSafe &rarr;</a></h3>
+            <p>Will you get <strong>sued</strong>? Checks your site for ADA accessibility and privacy-law exposure.</p>
+          </div>
+        </li>
+        <li class="feature">
+          <span class="feat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="3.5"/><path d="M10 13 21 2"/><path d="M16 7l3 3M14.5 8.5l2.5 2.5"/></svg></span>
+          <div>
+            <h3><a href="https://dukotah.github.io/leakcheck/" target="_blank" rel="noopener noreferrer">LeakCheck &rarr;</a></h3>
+            <p>Did you leak a secret in your <strong>code</strong>? Finds exposed API keys and tokens before you commit.</p>
+          </div>
+        </li>
+        <li class="feature">
+          <span class="feat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4"/><path d="M19 5a10 10 0 0 1 0 14M5 19A10 10 0 0 1 5 5"/></svg></span>
+          <div>
+            <h3><a href="https://dukotah.github.io/exposurecheck/" target="_blank" rel="noopener noreferrer">ExposureCheck &rarr;</a></h3>
+            <p>Is your <strong>live site</strong> leaking? Scans a running URL for exposed files and headers.</p>
+          </div>
+        </li>
+        <li class="feature">
+          <span class="feat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg></span>
+          <div>
+            <h3><a href="https://dukotah.github.io/depcheck/" target="_blank" rel="noopener noreferrer">DepCheck &rarr;</a></h3>
+            <p>Are your <strong>dependencies</strong> risky? Flags vulnerable and abandoned npm packages.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="faq">
+    <div class="wrap narrow">
+      <p class="eyebrow">FAQ</p>
+      <h2 class="faq-title">Questions, answered</h2>
+
+      <details>
+        <summary>Where do these benchmark numbers come from?</summary>
+        <p>The defaults reflect widely cited subscription-payments research: roughly <strong>9% of recurring charges fail monthly</strong>, <strong>20–40% of churn is involuntary</strong> (failed payments rather than cancellations), Stripe's built-in <strong>Smart Retries recover about 38%</strong> of failed charges, and a <strong>dedicated dunning flow recovers 60–80%</strong>. They're starting points, not gospel — every input is editable, so plug in your own data the moment you have it. See <a href="about.html">How it works</a> for the full methodology and sources.</p>
+      </details>
+
+      <details>
+        <summary>Is this an exact figure I can take to the bank?</summary>
+        <p>No — it's an <strong>estimate</strong>, and a deliberately simple one. It models a steady-state month: MRR &times; failure rate gives revenue at risk, and your recovery rates split that into kept versus lost. It doesn't model the compounding effect of a recovered customer staying for many more months (which makes the real number <em>larger</em>), nor seasonal swings or your exact card mix. Treat it as a credible order-of-magnitude, not an audited forecast.</p>
+      </details>
+
+      <details>
+        <summary>Do you store the numbers I type?</summary>
+        <p>No. RecoverFlow runs <strong>entirely in your browser</strong>. Nothing you enter is uploaded, logged, or stored — there's no backend, no database, and no analytics on your inputs. Close the tab and it's gone. You can disconnect from the internet after the page loads and the calculator still works.</p>
+      </details>
+
+      <details>
+        <summary>What actually lifts recovery from 38% to 70%?</summary>
+        <p>Built-in retries only retry the card. A real dunning flow adds the human side: <strong>smart retry timing</strong> (retrying when payday or a topped-up balance is likely), <strong>card-update prompts</strong> over email and SMS, <strong>in-app banners</strong> for active users, and graceful escalation before access is cut. Each channel recovers customers the others miss, which is how dedicated tools reach the 60–80% range. That paid recovery engine is what Copper Bay Labs is building next — <a href="https://copperbaytech.com" target="_blank" rel="noopener noreferrer">get on the list &rarr;</a></p>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer" role="contentinfo">
+  <div class="wrap foot">
+    <div>
+      <a class="brand small" href="./" aria-label="RecoverFlow — homepage">
+        <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="32" r="28" fill="#bf6b3c"/>
+          <circle cx="32" cy="32" r="21" fill="#1d222b"/>
+          <path d="M44 28 A14 14 0 1 0 46 38" fill="none" stroke="#cbd2da" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M44 21 L45 30 L36 27 Z" fill="#cbd2da"/>
+          <path d="M32 23 V41 M27.5 27 C27.5 24.5 30 24 32 24 C34.5 24 36 25.5 36 27.2 C36 31 28 31 28 35 C28 37 29.8 39 32 39 C34.5 39 36.5 38 36.5 36" fill="none" stroke="#bf6b3c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="wordmark">RecoverFlow</span>
+      </a>
+      <p class="fine">An estimate from editable benchmarks — a planning tool, not financial advice.</p>
+    </div>
+    <nav class="foot-nav" aria-label="Footer navigation">
+      <a href="about.html">How it works</a>
+      <a href="https://dukotah.github.io/shipsafe/" target="_blank" rel="noopener noreferrer">ShipSafe</a>
+      <a href="https://dukotah.github.io/leakcheck/" target="_blank" rel="noopener noreferrer">LeakCheck</a>
+      <a href="https://dukotah.github.io/exposurecheck/" target="_blank" rel="noopener noreferrer">ExposureCheck</a>
+      <a href="https://dukotah.github.io/depcheck/" target="_blank" rel="noopener noreferrer">DepCheck</a>
+      <a href="https://copperbaytech.com" target="_blank" rel="noopener noreferrer">Recover my revenue &rarr;</a>
+    </nav>
+  </div>
+  <div class="wrap">
+    <p class="madeby">A <a href="https://copperbaytech.com" target="_blank" rel="noopener noreferrer">Copper Bay Labs</a> product. Estimates are for planning only and are not financial advice.</p>
+  </div>
+</footer>
+
+<script src="app.js?v=1"></script>
+</body>
+</html>
