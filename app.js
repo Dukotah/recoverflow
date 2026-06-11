@@ -399,7 +399,7 @@
   function buildShareLine(r) {
     return "RecoverFlow estimates we're losing about " + money(r.lostNowY) +
       "/yr to failed payments — and a dedicated dunning flow would win back roughly " +
-      money(r.winBackY) + "/yr. Check yours: https://dukotah.github.io/recoverflow/";
+      money(r.winBackY) + "/yr. Check yours: https://labs.copperbaytech.com/recoverflow/";
   }
 
   /* ------------------------------------------------------------------ *
